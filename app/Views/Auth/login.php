@@ -3,7 +3,11 @@
 
 
 <h1>Silahkan Login</h1>
+<?php if (session()->getFlashdata('pesan')) : ?>
+    <?= session()->getFlashdata('pesan') ?>
 
+<?php endif; ?>
+<?= $validation->listErrors(); ?>
 <form action="/auth/login" method="post">
     <?= csrf_field(); ?>
     <div class="form-group">
