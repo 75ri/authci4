@@ -10,6 +10,7 @@ class Auth extends BaseController
     function __construct()
     {
         $this->email = \Config\Services::email();
+        $this->db = \Config\Database::connect();
         $this->m_auth = new m_auth();
     }
 
@@ -45,9 +46,9 @@ class Auth extends BaseController
             );
         }
 
-        $email = $this->request->getvar('email');
-        $pass = $this->request->getvar('password');
-        $cek = $this->m_auth->login($email);
+        // $email = $this->request->getvar('email');
+        // $pass = $this->request->getvar('password');
+        // $cek = $this->m_auth->login($email);
 
         // dd($email = $cek);
 
@@ -61,19 +62,15 @@ class Auth extends BaseController
 
                 if ($cek['is_active'] == 1) { // cek apa email sudah aktif
 
-                    if ($pass == $cek['password']) { //apakham password benar
+
+                    if (password_verify($pass, $cek['password'])) {
+                        // if ($pass == $cek['password']) { //apakham password benar
 
                         $data = [
                             'email' => $cek['email'],
                             'role' => $cek['role']
                         ];
                         session()->set($data);
-
-
-                        // dd((session()->get('email')));
-
-                        // echo 'Selamat datang';
-
                         session()->setFlashdata('pesan', 'selamat datang');
                         return redirect()->to('../user');
                     } else {
@@ -93,13 +90,7 @@ class Auth extends BaseController
             }
         }
     }
-    public function logout()
-    {
-        session()->setTempdata('email');
-        session()->setTempdata('password');
-        session()->setFlashdata('pesan', 'anda berhasil keluar');
-        return redirect()->to('../auth');
-    }
+
     //--------------------------------------------------------------------
     public function register()
     {
@@ -112,46 +103,74 @@ class Auth extends BaseController
 
     public function regis()
     {
-
-        // dd($this->request->getVar());
-        // $this->m_auth->save([
-        //     'username' => '',
-        //     'password' => password_hash($this->request->getvar('password'), PASSWORD_DEFAULT),
-        //     'full_name' => $this->request->getvar('full_name'),
-        //     'email' => $this->request->getvar('email'),
-        //     'phone' => '',
-        //     'role' => '1',
-        //     'last_login' => '',
-        //     'photo' => 'default.jpg',
-        //     'created_at' => time(),
-        //     'is_active' => '1',
-        // ]);
-
-        $this->_sendEmail();
-
-
-        // $this->m_auth->insert($_POST);
+        $email = $this->request->getvar('email');
+        $token = base64_encode(random_bytes(4));
+        $token_user = [
+            'email' => $email,
+            'token' => $token,
+            'date_created' => time(),
+        ];
+        $this->m_auth->token_user($token_user);
+        $this->m_auth->save([
+            'username' => '',
+            'password' => password_hash($this->request->getvar('password'), PASSWORD_DEFAULT),
+            'full_name' => $this->request->getvar('full_name'),
+            'email' => $email,
+            'phone' => '',
+            'role' => '1',
+            'last_login' => '',
+            'photo' => 'default.jpg',
+            'created_at' => time(),
+            'is_active' => '0',
+        ]);
+        $this->_sendEmail($token, 'verify');
+        session()->setFlashdata('pesan', 'Silahkan aktifasi dari email anda');
         return redirect()->to('/auth');
     }
 
-    private function _sendEmail()
+    private function _sendEmail($token)
     {
         $this->email->setFrom('jumarimj01@gmail.com', 'toni');
         $this->email->setTo('jumarimj01@gmail.com');
         // $this->email->setCC('another@another-example.com');
         // $this->email->setBCC('them@their-example.com');
-
-        $this->email->setSubject('Email Test');
-        $this->email->setMessage('Testing the email class.');
+        $this->email->setSubject('Aktifasi Akun ');
+        $this->email->setMessage('Silhkan Klil link berikut untuk aktifasi akun anda.<a href="' . base_url() . '/auth/verify?email=' .  $this->request->getvar('email') . '&token=' . $token .  '">Atifkan</a>');
         if ($this->email->send()) {
             return true;
         } else {
             echo $this->email->print_debugger();
         }
-        session()->setFlashdata('pesan', 'Silahkan aktifasi dari email anda');
-        return redirect()->to('/auth');
     }
-
+    public function verify()
+    {
+        $email = $this->request->getvar('email');
+        $token = $this->request->getvar('token');
+        $cek = $this->m_auth->login($email);
+        if ($cek) {
+            $tokenCek = $this->m_auth->getToken($token);
+            if ($tokenCek) {
+                // echo 'bisa';
+                $this->db->table('users')->update(['is_active' => 1]);
+                session()->setFlashdata('pesan', 'Selamat Email Anda Sudah Aktif Silahakan Login');
+                return redirect()->to('/auth');
+            } else {
+                $this->db->table('user_token')->delete(['email' => $email]);
+                $this->db->table('users')->delete(['email' => $email]);
+                session()->setFlashdata('pesan', 'Token Aktifasi gagal');
+                return redirect()->to('/auth');
+            }
+        } else {
+            session()->setFlashdata('pesan', 'Aktifasi gagal');
+            return redirect()->to('/auth');
+        }
+    }
     //--------------------------------------------------------------------
-
+    public function logout()
+    {
+        session()->setTempdata('email');
+        session()->setTempdata('password');
+        session()->setFlashdata('pesan', 'anda berhasil keluar');
+        return redirect()->to('../auth');
+    }
 }
