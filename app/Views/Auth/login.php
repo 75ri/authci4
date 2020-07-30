@@ -26,7 +26,8 @@
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>
 <ul>
-    <li><a href="auth/register">register</a></li>
+    <li><a href="/auth/register">register</a></li>
+    <li><a href="/auth/forgot">forgot</a></li>
 </ul>
 
 

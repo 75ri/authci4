@@ -42,7 +42,6 @@ class User extends BaseController
             'password' => 'required|trim',
             'passwordBaru' => 'required|trim|min_length[3]|matches[passwordUlangi]',
             'passwordUlangi' => 'required|trim|min_length[3]|matches[passwordUlangi]',
-
         ], [   // Errors
             'password' => [
                 'required' => 'Sandi wajib diisi',
@@ -64,13 +63,9 @@ class User extends BaseController
             $gantipass = $this->request->getvar('passwordBaru');
             if ($user['password'] == $pass) {
                 if ($user['password'] == $gantipass) {
-                    session()->setFlashdata('pesan', 'Sandi Tidak Boleh Sama ');
+                    session()->setFlashdata('pesan', 'Sandi Tidak Boleh mengunakan sandi yang lama ');
                     return redirect()->to('gantipass');
                 } else {
-
-
-
-
                     session()->setFlashdata('pesan', 'Sandi Berhasil Di ubah');
                     return redirect()->to('gantipass');
                 }
