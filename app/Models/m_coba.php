@@ -23,4 +23,13 @@ class m_coba extends Model
         $query = $this->db->table('coba')->insert($nama);
         return $query;
     }
+
+    public function get_menu()
+    {
+        $role = session('role');
+        return  $this->db->table('user_menu')
+            ->join('user_access_menu', 'user_menu.id = user_access_menu.menu_id ')
+            ->where(['user_access_menu', 'role_id' => $role])
+            ->get()->getResultArray();
+    }
 }

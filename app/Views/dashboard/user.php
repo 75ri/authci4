@@ -5,7 +5,7 @@
 <h1><?= (session()->get('email')); ?> ambil dari sseion</h1>
 <h2>haloo</h2>
 <pre>
-    <?= print_r($user); ?>
+    <?= var_dump($user); ?>
 </pre>
 
 <?= $this->endSection(); ?>

@@ -13,14 +13,12 @@
 </form>
 
 
-
 <table style="border: 1px solid black;" class="table table-hover">
     <thead>
         <tr>
             <th>Nama</th>
             <th>Aksi</th>
         </tr>
-
 
     </thead>
     <?php foreach ($nama as $n) : ?>
@@ -31,8 +29,6 @@
                     <li><a href="/edit">edit</a></li>
                 </td>
             </tr>
-
-
         </tbody>
     <?php endforeach; ?>
 </table>

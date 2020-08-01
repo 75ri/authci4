@@ -68,11 +68,12 @@ class Auth extends BaseController
                     if (password_verify($pass, $cek['password'])) {
                         // if ($pass == $cek['password']) { //apakham password benar
 
-                        $data = [
+                        $suser = [
                             'email' => $cek['email'],
-                            'role' => $cek['role']
+                            'role' => $cek['role'],
+
                         ];
-                        session()->set($data);
+                        session()->set($suser);
                         session()->setFlashdata('pesan', 'selamat datang');
                         return redirect()->to('../user');
                     } else {
@@ -268,10 +269,10 @@ class Auth extends BaseController
     }
     public function CekResetPass()
     {
-        $pss = $this->request->getvar('password1');
+        // $pss = $this->request->getvar('password1');
         $email = $this->request->getvar('email');
         // dd($email);
-        // $pas = password_hash($this->request->getvar('password'), PASSWORD_DEFAULT);
+        $pss = password_hash($this->request->getvar('password1'), PASSWORD_DEFAULT);
         if (!$this->validate(
             [
                 'password1' => 'required|trim|min_length[3]',
@@ -295,8 +296,9 @@ class Auth extends BaseController
     //--------------------------------------------------------------------
     public function logout()
     {
-        session()->setTempdata('email');
-        session()->setTempdata('password');
+        // session()->remove('email');
+        // session()->remove('role');
+        session()->destroy();
         session()->setFlashdata('pesan', 'anda berhasil keluar');
         return redirect()->to('../auth');
     }

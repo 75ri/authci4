@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\m_auth;
 
+
 class User extends BaseController
 {
     function __construct()
@@ -12,10 +13,11 @@ class User extends BaseController
     }
     public function index()
     {
-        $email = $this->m_auth->login((session()->get('email')));
+        $role = session()->get('email');
         $data = [
             'title' => 'User',
-            'user' => $email,
+            'user' => $role,
+
         ];
         return view('dashboard/user', $data);
         // echo (session()->get('email'));
